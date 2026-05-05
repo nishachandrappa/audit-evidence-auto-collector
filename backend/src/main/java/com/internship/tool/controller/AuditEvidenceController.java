@@ -1,15 +1,19 @@
 package com.internship.tool.controller;
 
 import com.internship.tool.entity.AuditEvidence;
+import com.internship.tool.repository.AuditEvidenceRepository;
 import com.internship.tool.service.AuditEvidenceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/evidence")
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuditEvidenceController {
 
     private final AuditEvidenceService service;
+    private final AuditEvidenceRepository repository;
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
@@ -79,5 +84,19 @@ public class AuditEvidenceController {
                         "attachment; filename=audit-evidence.csv")
                 .header("Content-Type", "text/csv")
                 .body(csv.toString());
+    }
+
+    @GetMapping("/stats")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, Object>> getStats() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("total", repository.count());
+        stats.put("open", repository.findByStatusAndIsDeletedFalse(
+                "OPEN", PageRequest.of(0, Integer.MAX_VALUE)).getTotalElements());
+        stats.put("closed", repository.findByStatusAndIsDeletedFalse(
+                "CLOSED", PageRequest.of(0, Integer.MAX_VALUE)).getTotalElements());
+        stats.put("inProgress", repository.findByStatusAndIsDeletedFalse(
+                "IN_PROGRESS", PageRequest.of(0, Integer.MAX_VALUE)).getTotalElements());
+        return ResponseEntity.ok(stats);
     }
 }
