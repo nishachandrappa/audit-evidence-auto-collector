@@ -10,12 +10,13 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: true
 
   flyway:
     enabled: true
     locations: classpath:db/migration
+    baseline-on-migrate: true
 
   data:
     redis:
@@ -35,6 +36,6 @@ jwt:
   secret: ${JWT_SECRET:mysecretkey123456789012345678901234567890}
   expiration: 86400000
 
-  ai:
-    service:
-      url: ${AI_SERVICE_URL:http://localhost:5000}
+ai:
+  service:
+    url: ${AI_SERVICE_URL:http://localhost:5000}
