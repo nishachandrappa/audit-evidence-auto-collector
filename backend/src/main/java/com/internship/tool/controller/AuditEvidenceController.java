@@ -5,7 +5,6 @@ import com.internship.tool.repository.AuditEvidenceRepository;
 import com.internship.tool.service.AuditEvidenceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -13,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,8 +25,8 @@ public class AuditEvidenceController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Page<AuditEvidence>> getAll(Pageable pageable) {
-        return ResponseEntity.ok(service.getAll(pageable));
+    public ResponseEntity<List<AuditEvidence>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(service.getAll(pageable).getContent());
     }
 
     @GetMapping("/{id}")
@@ -60,19 +60,19 @@ public class AuditEvidenceController {
 
     @GetMapping("/search")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Page<AuditEvidence>> search(
+    public ResponseEntity<List<AuditEvidence>> search(
             @RequestParam String q,
             Pageable pageable) {
-        return ResponseEntity.ok(service.search(q, pageable));
+        return ResponseEntity.ok(service.search(q, pageable).getContent());
     }
 
     @GetMapping("/export")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> exportCsv(Pageable pageable) {
-        Page<AuditEvidence> all = service.getAll(pageable);
+        List<AuditEvidence> all = service.getAll(pageable).getContent();
         StringBuilder csv = new StringBuilder();
         csv.append("ID,Title,Description,Status,EvidenceType,CreatedAt\n");
-        all.getContent().forEach(e -> csv.append(
+        all.forEach(e -> csv.append(
                         e.getId()).append(",")
                 .append(e.getTitle()).append(",")
                 .append(e.getDescription() != null ? e.getDescription() : "").append(",")
